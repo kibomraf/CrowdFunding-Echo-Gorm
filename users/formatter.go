@@ -6,6 +6,7 @@ type FormatRegister struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	Token      string `json:"token"`
+	ImageUrl   string `json:"image_url"`
 }
 
 func FormatterUsers(user Users, token string) FormatRegister {
@@ -15,6 +16,7 @@ func FormatterUsers(user Users, token string) FormatRegister {
 		Email:      user.Email,
 		Password:   user.Password_hash,
 		Token:      token,
+		ImageUrl:   user.Avatar_file_name,
 	}
 	return formatter
 }

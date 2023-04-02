@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"crowdfunding/helper"
-	"crowdfunding/users"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+
+	"crowdfunding/helper"
+	"crowdfunding/users"
 )
 
 type handler struct {
@@ -74,4 +75,11 @@ func (h *handler) LoginUser(c echo.Context) error {
 	formater := users.FormatterUsers(loginUser, "token")
 	response := helper.APIResponse("error request", http.StatusBadRequest, "error", formater)
 	return c.JSON(http.StatusBadRequest, response)
+}
+
+func (h *handler) FetchUser(c echo.Context) error {
+	currentuser := c.Get("currentUser").(users.Users)
+	formatter := users.FormatterUsers(currentuser, "token")
+	response := helper.APIResponse("success fetch user data", http.StatusOK, "success", formatter)
+	return c.JSON(http.StatusOK, response)
 }

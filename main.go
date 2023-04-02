@@ -1,13 +1,13 @@
 package main
 
 import (
-	"crowdfunding/handler"
-	"crowdfunding/users"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"crowdfunding/handler"
+	"crowdfunding/users"
 )
 
 func main() {
@@ -26,5 +26,6 @@ func main() {
 	api := app.Group("/api/v1")
 	api.POST("/user", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
+	api.GET("/users/fetch",userHandler.FetchUser)
 	app.Logger.Fatal(app.Start(":8080"))
 }
