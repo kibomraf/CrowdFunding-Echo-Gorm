@@ -21,8 +21,8 @@ func (h *handler) RegisterUser(c echo.Context) error {
 	var input users.InputRegister
 	err := c.Bind(&input)
 	if err != nil {
-		response := helper.APIResponse("error request", http.StatusBadRequest, "error", nil)
-		return c.JSON(http.StatusBadRequest, response)
+		response := helper.APIResponse("error request", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
 
 	// Validasi input register menggunakan package validator
@@ -33,13 +33,13 @@ func (h *handler) RegisterUser(c echo.Context) error {
 		errorMessage := echo.Map{
 			"errors": errors,
 		}
-		response := helper.APIResponse("unprocessable entity", http.StatusUnprocessableEntity, "error", errorMessage)
-		return c.JSON(http.StatusUnprocessableEntity, response)
+		response := helper.APIResponse("unprocessable entity", echo.ErrUnprocessableEntity.Code, "error", errorMessage)
+		return c.JSON(echo.ErrUnprocessableEntity.Code, response)
 	}
 	user, err := h.service.RegisterUser(input)
 	if err != nil {
-		response := helper.APIResponse("error register user", http.StatusBadRequest, "error", nil)
-		return c.JSON(http.StatusBadRequest, response)
+		response := helper.APIResponse("error register user", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
 
 	// Format data user menggunakan formatter
@@ -54,8 +54,8 @@ func (h *handler) LoginUser(c echo.Context) error {
 	var login users.InputLogin
 	err := c.Bind(&login)
 	if err != nil {
-		response := helper.APIResponse("error request", http.StatusBadRequest, "error", nil)
-		return c.JSON(http.StatusBadRequest, response)
+		response := helper.APIResponse("error request", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
 	validate := validator.New()
 	err = validate.Struct(login)
@@ -64,17 +64,17 @@ func (h *handler) LoginUser(c echo.Context) error {
 		errorMessage := echo.Map{
 			"errors": errors,
 		}
-		response := helper.APIResponse("unprocessable entity", http.StatusUnprocessableEntity, "error", errorMessage)
-		return c.JSON(http.StatusUnprocessableEntity, response)
+		response := helper.APIResponse("unprocessable entity", echo.ErrUnprocessableEntity.Code, "error", errorMessage)
+		return c.JSON(echo.ErrUnprocessableEntity.Code, response)
 	}
 	loginUser, err := h.service.LoginUser(login)
 	if err != nil {
-		response := helper.APIResponse("not found", http.StatusNotFound, "email or password is invalid", nil)
-		return c.JSON(http.StatusNotFound, response)
+		response := helper.APIResponse("email or password is invalid", echo.ErrNotFound.Code, "not found", nil)
+		return c.JSON(echo.ErrNotFound.Code, response)
 	}
 	formater := users.FormatterUsers(loginUser, "token")
-	response := helper.APIResponse("error request", http.StatusBadRequest, "error", formater)
-	return c.JSON(http.StatusBadRequest, response)
+	response := helper.APIResponse("login success", http.StatusOK, "succes", formater)
+	return c.JSON(http.StatusOK, response)
 }
 
 func (h *handler) FetchUser(c echo.Context) error {
@@ -82,4 +82,46 @@ func (h *handler) FetchUser(c echo.Context) error {
 	formatter := users.FormatterUsers(currentuser, "token")
 	response := helper.APIResponse("success fetch user data", http.StatusOK, "success", formatter)
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *handler) CheckEmailAvailablity(c echo.Context) error {
+	//input user terhadap email register
+	//input map di mapping ke struct input
+	//struct input di mapping ke service
+	//service manggil repo mengencek terhadap email
+	//repo - db
+	var checkemail users.ChekEmail
+	err := c.Bind(&checkemail)
+	if err != nil {
+		errors := helper.FormatError(err)
+		msgError := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("error", echo.ErrBadRequest.Code, "error request", msgError)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	validate := validator.New()
+	err = validate.Struct(checkemail)
+	if err != nil {
+		errors := helper.FormatError(err)
+		msgError := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("unprocassable", echo.ErrUnprocessableEntity.Code, "error", msgError)
+		return c.JSON(echo.ErrUnprocessableEntity.Code, response)
+	}
+	isemailavailable, err := h.service.IsEmailAvailable(checkemail)
+	if !isemailavailable || err != nil {
+		msgerr := echo.Map{
+			"errors": "email is not available",
+		}
+		response := helper.APIResponse("failed", echo.ErrNotFound.Code, "failed", msgerr)
+		return c.JSON(echo.ErrNotFound.Code, response)
+	}
+	msg := echo.Map{
+		"is available": isemailavailable,
+	}
+	response := helper.APIResponse("email is available", http.StatusOK, "success", msg)
+	return c.JSON(http.StatusOK, response)
+
 }

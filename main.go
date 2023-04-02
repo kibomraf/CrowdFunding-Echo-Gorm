@@ -20,12 +20,16 @@ func main() {
 	userRepo := users.UserRepository(db)
 	userService := users.UserService(userRepo)
 	userHandler := handler.UserHandler(userService)
+
 	app := echo.New()
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recover())
+
 	api := app.Group("/api/v1")
 	api.POST("/user", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
-	api.GET("/users/fetch",userHandler.FetchUser)
+	api.GET("/user/fetch", userHandler.FetchUser)
+	api.POST("/user/check", userHandler.CheckEmailAvailablity)
+
 	app.Logger.Fatal(app.Start(":8080"))
 }
