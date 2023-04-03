@@ -1,6 +1,14 @@
 package helper
 
-import "github.com/go-playground/validator/v10"
+import (
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type Meta struct {
 	Message string `json:"message"`
@@ -30,4 +38,31 @@ func FormatError(err error) []string {
 		errors = append(errors, e.Error())
 	}
 	return errors
+}
+func NewFileExt(file string) string {
+	filename := file
+	ext := filepath.Ext(filename)
+	deleteExt := strings.TrimSuffix(filename, ext)
+	newFileName := deleteExt + ".png"
+	return newFileName
+}
+func SavedUploadNewAvatar(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	if err = os.MkdirAll(filepath.Dir(dst), 0750); err != nil {
+		return err
+	}
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }

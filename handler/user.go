@@ -1,11 +1,7 @@
 package handler
 
 import (
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -141,7 +137,9 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-	src, err := file.Open()
+	newFileExt := helper.NewFileExt(file.Filename)
+	path := "images/avatar" + newFileExt
+	err = helper.SavedUploadNewAvatar(file, path)
 	if err != nil {
 		msg := echo.Map{
 			"is uploaded": false,
@@ -149,23 +147,8 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-	defer src.Close()
-	dir := filepath.Join("images", "avatar")
-	os.MkdirAll(dir, 0755)
-	filename := file.Filename
-	ext := filepath.Ext(filename)
-	deleteExt := strings.TrimSuffix(filename, ext)
-	newFileName := deleteExt + ".png"
-	dst, err := os.Create(filepath.Join(dir, newFileName))
-	if err != nil {
-		msg := echo.Map{
-			"is uploaded": false,
-		}
-		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
-		return c.JSON(echo.ErrBadRequest.Code, response)
-	}
-	defer dst.Close()
-	_, err = io.Copy(dst, src)
+	//defer dst.Close()
+	//_, err = io.Copy(dst, src)
 	if err != nil {
 		msg := echo.Map{
 			"is uploaded": false,
@@ -175,7 +158,6 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 	}
 	data := echo.Map{
 		"is uploaded": true,
-		"image url":   newFileName,
 	}
 	response := helper.APIResponse("success uploaded", http.StatusOK, "success", data)
 	return c.JSON(http.StatusOK, response)
