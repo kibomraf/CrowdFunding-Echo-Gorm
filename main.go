@@ -22,14 +22,16 @@ func main() {
 	userHandler := handler.UserHandler(userService)
 
 	app := echo.New()
+	//midlerware
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recover())
-
+	//route user
 	api := app.Group("/api/v1")
 	api.POST("/user", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
 	api.GET("/user/fetch", userHandler.FetchUser)
 	api.POST("/user/check", userHandler.CheckEmailAvailablity)
+	api.POST("/user/avatar", userHandler.UploadAvatar)
 
 	app.Logger.Fatal(app.Start(":8080"))
 }
