@@ -125,10 +125,6 @@ func (h *handler) CheckEmailAvailablity(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 func (h *handler) UploadAvatar(c echo.Context) error {
-	// user input avatar di passing ke struct input
-	// struct input dipassing ke service
-	// service dipasssing ke repository
-	// repository -db
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		msg := echo.Map{
