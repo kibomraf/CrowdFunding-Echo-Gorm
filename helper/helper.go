@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -39,11 +40,11 @@ func FormatError(err error) []string {
 	}
 	return errors
 }
-func NewFileExt(file string) string {
+func NewFileName(Id int, file string) string {
 	filename := file
 	ext := filepath.Ext(filename)
 	deleteExt := strings.TrimSuffix(filename, ext)
-	newFileName := deleteExt + ".png"
+	newFileName := fmt.Sprintf("%v-%s.png", Id, deleteExt)
 	return newFileName
 }
 func SavedUploadNewAvatar(file *multipart.FileHeader, dst string) error {

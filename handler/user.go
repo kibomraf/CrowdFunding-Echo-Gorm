@@ -137,8 +137,10 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-	newFileExt := helper.NewFileExt(file.Filename)
-	path := "images/avatar" + newFileExt
+	//jwtuserid
+	userId := 1
+	newFileExt := helper.NewFileName(userId, file.Filename)
+	path := "images/avatar/user/" + newFileExt
 	err = helper.SavedUploadNewAvatar(file, path)
 	if err != nil {
 		msg := echo.Map{
@@ -147,8 +149,7 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-	//defer dst.Close()
-	//_, err = io.Copy(dst, src)
+	user, err := h.service.SaveAvatar(userId, path)
 	if err != nil {
 		msg := echo.Map{
 			"is uploaded": false,
@@ -157,7 +158,8 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
 	data := echo.Map{
-		"is uploaded": true,
+		"is uploaded":    true,
+		"image location": user.Avatar_file_name,
 	}
 	response := helper.APIResponse("success uploaded", http.StatusOK, "success", data)
 	return c.JSON(http.StatusOK, response)
