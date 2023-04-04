@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -22,10 +20,8 @@ func main() {
 	}
 	userRepo := users.UserRepository(db)
 	userService := users.UserService(userRepo)
-	userHandler := handler.UserHandler(userService)
 	authService := auth.AuthService()
-	tkn, _ := authService.GenerateToken(1)
-	fmt.Println("Token :", tkn)
+	userHandler := handler.UserHandler(userService, authService)
 
 	app := echo.New()
 	//midlerware

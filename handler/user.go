@@ -6,16 +6,18 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 
+	"crowdfunding/auth"
 	"crowdfunding/helper"
 	"crowdfunding/users"
 )
 
 type handler struct {
 	service users.Service
+	auth    auth.Service
 }
 
-func UserHandler(service users.Service) *handler {
-	return &handler{service}
+func UserHandler(service users.Service, auth auth.Service) *handler {
+	return &handler{service, auth}
 }
 func (h *handler) RegisterUser(c echo.Context) error {
 	var input users.InputRegister
@@ -41,9 +43,12 @@ func (h *handler) RegisterUser(c echo.Context) error {
 		response := helper.APIResponse("error register user", echo.ErrBadRequest.Code, "error", nil)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-
-	// Format data user menggunakan formatter
-	formatter := users.FormatterUsers(user, "token")
+	tkn, err := h.auth.GenerateToken(user.Id)
+	if err != nil {
+		response := helper.APIResponse("error request", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	formatter := users.FormatterUsers(user, tkn)
 
 	// Set response API
 	response := helper.APIResponse("success register user", http.StatusCreated, "success", formatter)
@@ -72,24 +77,29 @@ func (h *handler) LoginUser(c echo.Context) error {
 		response := helper.APIResponse("email or password is invalid", echo.ErrNotFound.Code, "not found", nil)
 		return c.JSON(echo.ErrNotFound.Code, response)
 	}
-	formater := users.FormatterUsers(loginUser, "token")
+	tkn, err := h.auth.GenerateToken(loginUser.Id)
+	if err != nil {
+		response := helper.APIResponse("error request", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	formater := users.FormatterUsers(loginUser, tkn)
 	response := helper.APIResponse("login success", http.StatusOK, "succes", formater)
 	return c.JSON(http.StatusOK, response)
 }
 
 func (h *handler) FetchUser(c echo.Context) error {
 	currentuser := c.Get("currentUser").(users.Users)
-	formatter := users.FormatterUsers(currentuser, "token")
+	tkn, err := h.auth.GenerateToken(currentuser.Id)
+	if err != nil {
+		response := helper.APIResponse("error request", echo.ErrBadRequest.Code, "error", nil)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	formatter := users.FormatterUsers(currentuser, tkn)
 	response := helper.APIResponse("success fetch user data", http.StatusOK, "success", formatter)
 	return c.JSON(http.StatusOK, response)
 }
 
 func (h *handler) CheckEmailAvailablity(c echo.Context) error {
-	//input user terhadap email register
-	//input map di mapping ke struct input
-	//struct input di mapping ke service
-	//service manggil repo mengencek terhadap email
-	//repo - db
 	var checkemail users.ChekEmail
 	err := c.Bind(&checkemail)
 	if err != nil {
