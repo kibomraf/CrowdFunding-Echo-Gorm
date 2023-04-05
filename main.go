@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -21,6 +23,15 @@ func main() {
 	userRepo := users.UserRepository(db)
 	userService := users.UserService(userRepo)
 	authService := auth.AuthService()
+	tkn, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.idRXWhtHqE3TEvCzcb9Tn1_dUQ754fgCwS4KTRmafrs")
+	if err != nil {
+		fmt.Print("error")
+	}
+	if tkn.Valid {
+		fmt.Print("Valid")
+	} else {
+		fmt.Print("Invalid")
+	}
 	userHandler := handler.UserHandler(userService, authService)
 
 	app := echo.New()
