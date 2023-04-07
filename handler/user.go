@@ -13,10 +13,10 @@ import (
 
 type handler struct {
 	service users.Service
-	auth    auth.Service
+	auth    auth.AuthService
 }
 
-func UserHandler(service users.Service, auth auth.Service) *handler {
+func UserHandler(service users.Service, auth auth.AuthService) *handler {
 	return &handler{service, auth}
 }
 func (h *handler) RegisterUser(c echo.Context) error {
@@ -135,6 +135,8 @@ func (h *handler) CheckEmailAvailablity(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 func (h *handler) UploadAvatar(c echo.Context) error {
+	currentUser := c.Get("user").(users.Users)
+	userId := currentUser.Id
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		msg := echo.Map{
@@ -143,8 +145,6 @@ func (h *handler) UploadAvatar(c echo.Context) error {
 		response := helper.APIResponse("bad request", echo.ErrBadRequest.Code, "error", msg)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
-	//jwtuserid
-	userId := 1
 	newFileExt := helper.NewFileName(userId, file.Filename)
 	path := "images/avatar/user/" + newFileExt
 	err = helper.SavedUploadNewAvatar(file, path)

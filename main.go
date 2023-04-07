@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -22,20 +20,12 @@ func main() {
 	}
 	userRepo := users.UserRepository(db)
 	userService := users.UserService(userRepo)
-	authService := auth.AuthService()
-	tkn, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxfQ.idRXWhtHqE3TEvCzcb9Tn1_dUQ754fgCwS4KTRmafrs")
-	if err != nil {
-		fmt.Print("error")
-	}
-	if tkn.Valid {
-		fmt.Print("Valid")
-	} else {
-		fmt.Print("Invalid")
-	}
+	authService := auth.NewJWTservice("CrowdFunding-Echo")
 	userHandler := handler.UserHandler(userService, authService)
 
 	app := echo.New()
 	//midlerware
+	jwtMiddleWare := authService.JWTMiddleware(authService, userService)
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recover())
 	//route user
@@ -44,7 +34,7 @@ func main() {
 	api.POST("/login", userHandler.LoginUser)
 	api.GET("/user/fetch", userHandler.FetchUser)
 	api.POST("/user/check", userHandler.CheckEmailAvailablity)
-	api.POST("/user/avatar", userHandler.UploadAvatar)
+	api.POST("/user/avatar", userHandler.UploadAvatar, jwtMiddleWare)
 
 	app.Logger.Fatal(app.Start(":8080"))
 }
