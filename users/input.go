@@ -13,7 +13,3 @@ type InputLogin struct {
 type ChekEmail struct {
 	Email string `json:"email"  validate:"required,email"`
 }
-type UploadImage struct {
-	Filename string `json:"file_name" validate:"required"`
-	Data     string `json:"data" validate:"required"`
-}

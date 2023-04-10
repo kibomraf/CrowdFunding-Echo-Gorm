@@ -1,4 +1,4 @@
--- Active: 1679307292556@@127.0.0.1@5432@crowdfunding
+-- Active: 1680084304820@@127.0.0.1@5432@crowdfunding
 CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY NOT NULL,
   "name" varchar NOT NULL,
@@ -12,44 +12,44 @@ CREATE TABLE "users" (
   "updated_at" timestamptz DEFAULT (now())
 );
 
-CREATE TABLE "campaign" (
+CREATE TABLE "campaigns" (
   "id" bigserial PRIMARY KEY NOT NULL,
   "user_id" bigint,
   "name" varchar NOT NULL,
   "backer_account" bigint DEFAULT 0,
   "short_description" varchar NOT NULL,
-  "goal_ammount" bigint NOT NULL,
-  "current_ammount" bigint DEFAULT 0,
+  "goal_amount" bigint NOT NULL,
+  "current_amount" bigint DEFAULT 0,
   "perks" text,
   "slug" varchar,
   "created_at" timestamptz DEFAULT (now()),
   "updated_at" timestamptz DEFAULT (now())
 );
 
-CREATE TABLE "campaignimage" (
+CREATE TABLE "campaign_images" (
   "id" bigserial PRIMARY KEY NOT NULL,
   "campaign_id" bigint,
   "file_name" varchar NOT NULL,
-  "isPrimary" boolean NOT NULL,
+  "is_primary" boolean NOT NULL,
   "created_at" timestamptz DEFAULT (now()),
   "updated_at" timestamptz DEFAULT (now())
 );
 
-CREATE TABLE "transaction" (
+CREATE TABLE "transactions" (
   "id" bigserial PRIMARY KEY NOT NULL,
   "campaign_id" bigint NOT NULL,
   "user_id" bigint NOT NULL,
-  "ammount" bigint NOT NULL,
+  "amount" bigint NOT NULL,
   "status" varchar NOT NULL,
   "code_transaction" varchar NOT NULL,
   "created_at" timestamptz DEFAULT (now()),
   "updated_at" timestamptz DEFAULT (now())
 );
 
-ALTER TABLE "campaign" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "campaigns" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
-ALTER TABLE "campaignimage" ADD FOREIGN KEY ("campaign_id") REFERENCES "campaign" ("id");
+ALTER TABLE "campaign_images" ADD FOREIGN KEY ("campaign_id") REFERENCES "campaigns" ("id");
 
-ALTER TABLE "transaction" ADD FOREIGN KEY ("campaign_id") REFERENCES "campaign" ("id");
+ALTER TABLE "transactions" ADD FOREIGN KEY ("campaign_id") REFERENCES "campaigns" ("id");
 
-ALTER TABLE "transaction" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "transactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
