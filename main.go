@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -26,22 +24,19 @@ func main() {
 	userService := users.UserService(userRepo)
 	authService := auth.NewJWTservice("CrowdFunding-Echo")
 	userHandler := handler.UserHandler(userService, authService)
+
 	//campaign
 	campRepo := campaign.CampaignRepository(db)
-	campaign, err := campRepo.FindUserById(2)
-	if err != nil {
-		panic(err)
-	}
-	for _, c := range campaign {
-		fmt.Println("Campaign: ", c.Name)
-		fmt.Println("Campaign: ", c.CampaignImages[0].FileName)
+	campService := campaign.Campaignservices(campRepo)
+	campHandler := handler.NewCampHandler(campService)
 
-	}
 	app := echo.New()
+
 	//midlerware
 	jwtMiddleWare := authService.JWTMiddleware(authService, userService)
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recover())
+
 	//route user
 	api := app.Group("/api/v1")
 	api.POST("/user", userHandler.RegisterUser)
@@ -49,6 +44,9 @@ func main() {
 	api.GET("/user/fetch", userHandler.FetchUser)
 	api.POST("/user/check", userHandler.CheckEmailAvailablity)
 	api.POST("/user/avatar", userHandler.UploadAvatar, jwtMiddleWare)
+
+	//route camp
+	api.GET("/campaign", campHandler.GetCampaignc)
 
 	app.Logger.Fatal(app.Start(":8080"))
 }
