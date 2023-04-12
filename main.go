@@ -31,6 +31,7 @@ func main() {
 	campHandler := handler.NewCampHandler(campService)
 
 	app := echo.New()
+	app.Static("/avatar", "./images/avatar/user/")
 
 	//midlerware
 	jwtMiddleWare := authService.JWTMiddleware(authService, userService)

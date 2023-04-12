@@ -19,11 +19,12 @@ func NewCampHandler(service campaign.Service) *campHandler {
 }
 func (h *campHandler) GetCampaignc(c echo.Context) error {
 	userId, _ := strconv.Atoi(c.QueryParam("user_id"))
-	campaign, err := h.sevice.GetCampaign(userId)
+	camp, err := h.sevice.GetCampaign(userId)
 	if err != nil {
 		response := helper.APIResponse("error", echo.ErrInternalServerError.Code, "error", nil)
 		return c.JSON(echo.ErrInternalServerError.Code, response)
 	}
-	response := helper.APIResponse("success", http.StatusOK, "successfully created", campaign)
+	formatter := campaign.FormatterCampaigns(camp)
+	response := helper.APIResponse("list of campaigns", http.StatusOK, "success", formatter)
 	return c.JSON(http.StatusOK, response)
 }
