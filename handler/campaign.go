@@ -28,3 +28,16 @@ func (h *campHandler) GetCampaignc(c echo.Context) error {
 	response := helper.APIResponse("list of campaigns", http.StatusOK, "success", formatter)
 	return c.JSON(http.StatusOK, response)
 }
+
+func (h *campHandler) GetDetailsCampaign(c echo.Context) error {
+	var input campaign.InputGetDetailCampaign
+	input.Id, _ = strconv.Atoi(c.Param("id"))
+	campaigns, err := h.sevice.GetDetailsCampaign(input)
+	if err != nil {
+		response := helper.APIResponse("error", http.StatusBadRequest, "error", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+	formatter := campaign.GetDetailsCampaignFormatter(campaigns)
+	response := helper.APIResponse("details of campaign", http.StatusOK, "successfully", formatter)
+	return c.JSON(http.StatusOK, response)
+}
