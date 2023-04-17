@@ -41,3 +41,7 @@ func (h *campHandler) GetDetailsCampaign(c echo.Context) error {
 	response := helper.APIResponse("details of campaign", http.StatusOK, "successfully", formatter)
 	return c.JSON(http.StatusOK, response)
 }
+
+//tangkap parameter user ke input struct
+//panggil service parameternya input
+//panggil repository untuk simpan data campain baru

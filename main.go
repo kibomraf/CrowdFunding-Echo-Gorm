@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -31,11 +29,6 @@ func main() {
 	campRepo := campaign.CampaignRepository(db)
 	campService := campaign.Campaignservices(campRepo)
 	campHandler := handler.NewCampHandler(campService)
-	input := campaign.InputGetDetailCampaign{
-		Id: 1,
-	}
-	camp, _ := campService.GetDetailsCampaign(input)
-	fmt.Println("camp found :", camp)
 
 	app := echo.New()
 	app.Static("/avatar", "./images/avatar/user/")

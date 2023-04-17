@@ -3,6 +3,7 @@ package campaign
 type Service interface {
 	GetCampaign(userId int) ([]Campaigns, error)
 	GetDetailsCampaign(input InputGetDetailCampaign) (Campaigns, error)
+	CreateCampaign(input CreateCampaignInput) (Campaigns, error)
 }
 type campaignService struct {
 	r Repository
@@ -33,4 +34,20 @@ func (s *campaignService) GetDetailsCampaign(input InputGetDetailCampaign) (Camp
 	}
 	return campaigns, nil
 
+}
+func (s *campaignService) CreateCampaign(input CreateCampaignInput) (Campaigns, error) {
+	campaign := Campaigns{
+		Name:             input.Name,
+		ShortDescription: input.ShortDescription,
+		Description:      input.Description,
+		GoalAmount:       uint(input.GoalAmount),
+		Perks:            input.Perks,
+		User_id:          input.User.Id,
+	}
+	//pembuatan slug
+	newCampaign, err := s.r.Save(campaign)
+	if err != nil {
+		return newCampaign, err
+	}
+	return newCampaign, nil
 }
