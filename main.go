@@ -47,8 +47,9 @@ func main() {
 	api.POST("/user/avatar", userHandler.UploadAvatar, jwtMiddleWare)
 
 	//route camp
-	api.GET("/campaign", campHandler.GetCampaignc)
-	api.GET("/campaign/:id", campHandler.GetDetailsCampaign)
+	api.GET("/campaigns", campHandler.GetCampaignc)
+	api.GET("/campaigns/:id", campHandler.GetDetailsCampaign)
+	api.POST("/campaigns", campHandler.CreateCampaign, jwtMiddleWare)
 
 	app.Logger.Fatal(app.Start(":8080"))
 }

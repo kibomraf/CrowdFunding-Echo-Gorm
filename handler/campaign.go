@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 
 	"crowdfunding/campaign"
 	"crowdfunding/helper"
+	"crowdfunding/users"
 )
 
 type campHandler struct {
@@ -42,6 +44,35 @@ func (h *campHandler) GetDetailsCampaign(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-//tangkap parameter user ke input struct
-//panggil service parameternya input
-//panggil repository untuk simpan data campain baru
+func (h *campHandler) CreateCampaign(c echo.Context) error {
+	var input campaign.CreateCampaignInput
+	err := c.Bind(&input)
+	if err != nil {
+		response := helper.APIResponse("failed to create campaign", http.StatusBadRequest, "error", nil)
+		return c.JSON(http.StatusBadRequest, response)
+	}
+	validate := validator.New()
+	err = validate.Struct(input)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("unprocessable entity", echo.ErrUnprocessableEntity.Code, "error", errorMsg)
+		return c.JSON(echo.ErrUnprocessableEntity.Code, response)
+	}
+	currentUser := c.Get("user").(users.Users)
+	input.User = currentUser
+	newCampaign, err := h.sevice.CreateCampaign(input)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	formatter := campaign.FormatterCampaign(newCampaign)
+	response := helper.APIResponse("success to create campaign", http.StatusOK, "success", formatter)
+	return c.JSON(http.StatusOK, response)
+}

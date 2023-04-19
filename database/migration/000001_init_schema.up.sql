@@ -18,6 +18,7 @@ CREATE TABLE "campaigns" (
   "name" varchar NOT NULL,
   "backer_account" bigint DEFAULT 0,
   "short_description" varchar NOT NULL,
+  "description" varchar NOT NULL,
   "goal_amount" bigint NOT NULL,
   "current_amount" bigint DEFAULT 0,
   "perks" text,
