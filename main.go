@@ -50,6 +50,6 @@ func main() {
 	api.GET("/campaigns", campHandler.GetCampaignc)
 	api.GET("/campaigns/:id", campHandler.GetDetailsCampaign)
 	api.POST("/campaigns", campHandler.CreateCampaign, jwtMiddleWare)
-
+	api.PUT("/campaigns/:id", campHandler.UpdateCampaign, jwtMiddleWare)
 	app.Logger.Fatal(app.Start(":8080"))
 }

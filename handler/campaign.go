@@ -76,3 +76,59 @@ func (h *campHandler) CreateCampaign(c echo.Context) error {
 	response := helper.APIResponse("success to create campaign", http.StatusOK, "success", formatter)
 	return c.JSON(http.StatusOK, response)
 }
+func (h *campHandler) UpdateCampaign(c echo.Context) error {
+	var inputID campaign.InputGetDetailCampaign
+	var err error
+	inputID.Id, err = strconv.Atoi(c.Param("id"))
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	var camp campaign.CreateCampaignInput
+	err = c.Bind(&camp)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	validate := validator.New()
+	err = validate.Struct(camp)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("unprocessable entity", echo.ErrUnprocessableEntity.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	currentUser := c.Get("user").(users.Users)
+	camp.User = currentUser
+	updatedCampaign, err := h.sevice.UpdateCampaign(inputID, camp)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	formatter := campaign.FormatterCampaign(updatedCampaign)
+	response := helper.APIResponse("success to updated campaign", http.StatusOK, "successfully", formatter)
+	return c.JSON(http.StatusOK, response)
+
+}
+
+// update campaign
+// user masukan input
+// handler
+// mapping dari input ke input struc
+// input user dan juga input dari uri
+// service (find campaignbyid, tankap parameter)
+// repository update campaign
