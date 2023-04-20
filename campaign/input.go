@@ -13,3 +13,8 @@ type CreateCampaignInput struct {
 	Perks            string      `json:"perks" validate:"required"`
 	User             users.Users `json:"user" validate:"required"`
 }
+type InputSaveImages struct {
+	CampaignID int         `form:"campaign_id" validate:"required"`
+	IsPrimary  string      `form:"is_primary" validate:"required"`
+	User       users.Users `json:"user" validate:"required"`
+}

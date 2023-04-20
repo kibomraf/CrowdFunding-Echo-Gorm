@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,6 +13,7 @@ type Service interface {
 	GetDetailsCampaign(input InputGetDetailCampaign) (Campaigns, error)
 	CreateCampaign(input CreateCampaignInput) (Campaigns, error)
 	UpdateCampaign(campId InputGetDetailCampaign, update CreateCampaignInput) (Campaigns, error)
+	SaveImagesCampaign(input InputSaveImages, fileLocation string) (CampaignImages, error)
 }
 type campaignService struct {
 	r Repository
@@ -56,7 +58,6 @@ func (s *campaignService) CreateCampaign(input CreateCampaignInput) (Campaigns, 
 	}
 	slugCandidate := fmt.Sprintf("%v %v", input.Name, input.User.Id)
 	campaign.Slug = slug.Make(slugCandidate)
-	//pembuatan slug
 	newCampaign, err := s.r.Save(campaign)
 	if err != nil {
 		return newCampaign, err
@@ -68,6 +69,10 @@ func (s *campaignService) UpdateCampaign(campId InputGetDetailCampaign, update C
 	if err != nil {
 		return campaign, err
 	}
+	if update.User.Id != campaign.User_id {
+		msg := errors.New("you are not owner the campaign, do you want to iDOR ?")
+		return campaign, msg
+	}
 	campaign.Name = update.Name
 	campaign.ShortDescription = update.ShortDescription
 	campaign.Description = update.Description
@@ -78,4 +83,33 @@ func (s *campaignService) UpdateCampaign(campId InputGetDetailCampaign, update C
 		return campaign, err
 	}
 	return updateCampaign, nil
+}
+func (s *campaignService) SaveImagesCampaign(input InputSaveImages, fileLocation string) (CampaignImages, error) {
+	campaign, err := s.r.FindById(input.CampaignID)
+	if err != nil {
+		return CampaignImages{}, err
+	}
+	if campaign.User_id != input.User.Id {
+		return CampaignImages{}, errors.New("you're not the owner")
+	}
+	var isPrimary bool
+	if input.IsPrimary == "true" {
+		isPrimary = true
+		_, err := s.r.MarkAllImagesAsNonPrimary(input.CampaignID)
+		if err != nil {
+			return CampaignImages{}, err
+		}
+	}
+	campaignImage := CampaignImages{
+		CampaignId: input.CampaignID,
+		FileName:   fileLocation,
+		IsPrimary:  isPrimary,
+		Created_at: time.Now(),
+		Updated_at: time.Now(),
+	}
+	newImages, err := s.r.SaveImages(campaignImage)
+	if err != nil {
+		return CampaignImages{}, nil
+	}
+	return newImages, nil
 }

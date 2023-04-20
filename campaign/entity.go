@@ -24,7 +24,7 @@ type Campaigns struct {
 }
 type CampaignImages struct {
 	Id         int
-	CampaignId int
+	CampaignId int `gorm:"foreignKey:campaign_id"`
 	FileName   string
 	IsPrimary  bool
 	Created_at time.Time

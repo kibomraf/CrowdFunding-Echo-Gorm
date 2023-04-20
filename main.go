@@ -19,10 +19,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	//auth
+	authService := auth.NewJWTservice("CrowdFunding-Echo")
+
 	//users
 	userRepo := users.UserRepository(db)
 	userService := users.UserService(userRepo)
-	authService := auth.NewJWTservice("CrowdFunding-Echo")
 	userHandler := handler.UserHandler(userService, authService)
 
 	//campaign
@@ -51,5 +53,7 @@ func main() {
 	api.GET("/campaigns/:id", campHandler.GetDetailsCampaign)
 	api.POST("/campaigns", campHandler.CreateCampaign, jwtMiddleWare)
 	api.PUT("/campaigns/:id", campHandler.UpdateCampaign, jwtMiddleWare)
+	api.POST("/campaigns/image", campHandler.UploadImages, jwtMiddleWare)
+
 	app.Logger.Fatal(app.Start(":8080"))
 }

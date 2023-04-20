@@ -112,11 +112,7 @@ func (h *campHandler) UpdateCampaign(c echo.Context) error {
 	camp.User = currentUser
 	updatedCampaign, err := h.sevice.UpdateCampaign(inputID, camp)
 	if err != nil {
-		errors := helper.FormatError(err)
-		errorMsg := echo.Map{
-			"errors": errors,
-		}
-		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", errorMsg)
+		response := helper.APIResponse("failed to create campaign", echo.ErrBadRequest.Code, "error", err)
 		return c.JSON(echo.ErrBadRequest.Code, response)
 	}
 	formatter := campaign.FormatterCampaign(updatedCampaign)
@@ -124,11 +120,63 @@ func (h *campHandler) UpdateCampaign(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 
 }
+func (h *campHandler) UploadImages(c echo.Context) error {
+	currentUser := c.Get("user").(users.Users)
+	var input campaign.InputSaveImages
+	input.User = currentUser
+	err := c.Bind(&input)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to upload campaign image1", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	validate := validator.New()
+	err = validate.Struct(input)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("unprocessable entity", echo.ErrUnprocessableEntity.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	file, err := c.FormFile("file")
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to upload campaign image2", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	newFileExt := helper.NewFileName(currentUser.Id, file.Filename)
+	path := "images/campaign/" + newFileExt
+	campImage, err := h.sevice.SaveImagesCampaign(input, path)
+	if err != nil {
+		msg := echo.Map{
+			"errors":      err,
+			"is uploaded": false,
+		}
+		response := helper.APIResponse("failed to upload image4", echo.ErrBadRequest.Code, "error", msg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	err = helper.SavedUploadNewAvatar(file, path)
+	if err != nil {
+		errors := helper.FormatError(err)
+		errorMsg := echo.Map{
+			"errors": errors,
+		}
+		response := helper.APIResponse("failed to upload campaign image3", echo.ErrBadRequest.Code, "error", errorMsg)
+		return c.JSON(echo.ErrBadRequest.Code, response)
+	}
+	data := echo.Map{
+		"is uploaded":    true,
+		"image location": campImage.FileName,
+	}
+	response := helper.APIResponse("success uploaded campaign image5", http.StatusOK, "success", data)
+	return c.JSON(http.StatusOK, response)
 
-// update campaign
-// user masukan input
-// handler
-// mapping dari input ke input struc
-// input user dan juga input dari uri
-// service (find campaignbyid, tankap parameter)
-// repository update campaign
+}
