@@ -9,6 +9,7 @@ import (
 	"crowdfunding/auth"
 	"crowdfunding/campaign"
 	"crowdfunding/handler"
+	"crowdfunding/transaction"
 	"crowdfunding/users"
 )
 
@@ -32,6 +33,11 @@ func main() {
 	campService := campaign.Campaignservices(campRepo)
 	campHandler := handler.NewCampHandler(campService)
 
+	//transaction
+	transactionRepo := transaction.TransactionRepository(db)
+	transactionService := transaction.TransactionService(transactionRepo)
+	transactionHandler := handler.TransactionHandler(transactionService)
+
 	app := echo.New()
 	app.Static("/avatar", "./images/avatar/user/")
 
@@ -54,6 +60,11 @@ func main() {
 	api.POST("/campaigns", campHandler.CreateCampaign, jwtMiddleWare)
 	api.PUT("/campaigns/:id", campHandler.UpdateCampaign, jwtMiddleWare)
 	api.POST("/campaigns/image", campHandler.UploadImages, jwtMiddleWare)
+
+	//route transaction
+	api.GET("/campaigns/:id/transactions", transactionHandler.GetTransactionByCampaignId)
+	api.GET("/user/transactions", transactionHandler.GetTransactionOfUser, jwtMiddleWare)
+	api.POST("/campaigns/:id/transactions", transactionHandler.CreateTransaction, jwtMiddleWare)
 
 	app.Logger.Fatal(app.Start(":8080"))
 }

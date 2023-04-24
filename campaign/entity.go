@@ -20,7 +20,7 @@ type Campaigns struct {
 	Created_at       time.Time
 	Updated_at       time.Time
 	CampaignImages   []CampaignImages `gorm:"foreignKey:campaign_id"`
-	User             users.Users      `gorm:"foreignKey:user_id`
+	User             users.Users      `gorm:"foreignKey:user_id"`
 }
 type CampaignImages struct {
 	Id         int
